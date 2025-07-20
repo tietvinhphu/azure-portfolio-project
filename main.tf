@@ -2,11 +2,11 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~>3.0"
+      version = "~> 3.0"
     }
     random = {
       source  = "hashicorp/random"
-      version = "~>3.1"
+      version = "~> 3.1"
     }
   }
 }
@@ -60,7 +60,7 @@ resource "azurerm_key_vault_secret" "secret" {
   key_vault_id = azurerm_key_vault.kv.id
 }
 
-# 4. TẠO HẠ TẦNG CHO ỨNG DỤNG WEB
+# 4. TẠO HẠ TẦNG CHO ỨNG DỤNG WEB (KẾ HOẠCH DỊCH VỤ)
 resource "azurerm_service_plan" "plan" {
   name                = "portfolio-plan"
   resource_group_name = azurerm_resource_group.rg.name
@@ -69,35 +69,48 @@ resource "azurerm_service_plan" "plan" {
   sku_name            = "B1" # Bậc Basic, có chi phí thấp
 }
 
+# 5. TẠO ỨNG DỤNG WEB
 resource "azurerm_linux_web_app" "webapp" {
   name                = "portfolio-webapp-${random_string.suffix.result}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   service_plan_id     = azurerm_service_plan.plan.id
-  https_only          = true # Bật HTTPS
+  https_only          = true
 
-   # Cấu hình để chạy Docker container
+  # Xóa bỏ hoàn toàn linux_fx_version khỏi đây
   site_config {
-    always_on        = false
-    linux_fx_version = "DOCKER|node:latest"
+    always_on = false
   }
 
-  # TẠO DANH TÍNH ĐƯỢC QUẢN LÝ
   identity {
     type = "SystemAssigned"
   }
 
-  # CÀI ĐẶT THAM CHIẾU ĐẾN KEY VAULT
+  # Thêm cấu hình Docker vào đây
   app_settings = {
-    "SECRET_MESSAGE" = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.secret.id})"
+    "SECRET_MESSAGE"             = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.secret.id})"
+    "DOCKER_CUSTOM_IMAGE_NAME"   = "node:latest"
+    "DOCKER_REGISTRY_SERVER_URL" = "https://index.docker.io" # URL cho Docker Hub công khai
   }
 }
 
-# 5. CẤP QUYỀN CHO WEB APP ĐỌC KEY VAULT
+# 6. CẤP QUYỀN CHO WEB APP ĐỌC KEY VAULT
 resource "azurerm_key_vault_access_policy" "policy" {
   key_vault_id = azurerm_key_vault.kv.id
   tenant_id    = data.azurerm_client_config.current.tenant_id
   object_id    = azurerm_linux_web_app.webapp.identity[0].principal_id
 
   secret_permissions = ["Get"]
+}
+# 7. CẤP QUYỀN CHO BẠN (người đang chạy terraform) ĐỂ QUẢN LÝ SECRETS
+resource "azurerm_key_vault_access_policy" "user_policy" {
+  key_vault_id = azurerm_key_vault.kv.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = data.azurerm_client_config.current.object_id # Lấy ID của chính bạn
+
+  # Cấp quyền đầy đủ cho secrets
+  secret_permissions = [
+    "Get", "List", "Set", "Delete", "Purge", "Recover"
+  ]
+
 }
