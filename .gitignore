@@ -1,0 +1,10 @@
+# Terraform state files
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+
+# Terraform local directories
+.terraform/
+
+# Node.js dependencies
+app/node_modules
