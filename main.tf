@@ -114,3 +114,7 @@ resource "azurerm_key_vault_access_policy" "user_policy" {
   ]
 
 }
+output "webapp_hostname" {
+  description = "Địa chỉ trang web sau khi triển khai."
+  value       = azurerm_linux_web_app.webapp.default_hostname
+}
