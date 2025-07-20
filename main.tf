@@ -89,7 +89,7 @@ resource "azurerm_linux_web_app" "webapp" {
   # Thêm cấu hình Docker vào đây
   app_settings = {
     "SECRET_MESSAGE"             = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.secret.id})"
-    "DOCKER_CUSTOM_IMAGE_NAME"   = "node:latest"
+    "DOCKER_CUSTOM_IMAGE_NAME"   = "tietvinhphu/portfolio-app:latest"
     "DOCKER_REGISTRY_SERVER_URL" = "https://index.docker.io" # URL cho Docker Hub công khai
   }
 }
