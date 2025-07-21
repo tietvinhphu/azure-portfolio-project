@@ -4,7 +4,8 @@
 Đây là một dự án full-stack hoàn chỉnh, trình bày cách triển khai một ứng dụng web Node.js được đóng gói bằng Docker lên Azure. Toàn bộ hạ tầng (Mạng, App Service, Key Vault) được quản lý bằng Terraform theo nguyên tắc Infrastructure as Code (IaC). Ứng dụng được bảo mật bằng cách sử dụng Managed Identity để truy xuất "secrets" từ Azure Key Vault mà không cần lưu trữ bất kỳ thông tin nhạy cảm nào trong code.
 
 ## 2. Sơ đồ kiến trúc
-*(Dùng https://draw.io để vẽ một sơ đồ đơn giản rồi chèn ảnh vào đây)*
+Ảnh sơ đồ kiến trúc dự án:
+![alt text](<images/Kiến trúc Dự án Portfolio trên Azure.png>)
 
 ## 3. Công nghệ sử dụng
 - **Cloud:** Microsoft Azure
